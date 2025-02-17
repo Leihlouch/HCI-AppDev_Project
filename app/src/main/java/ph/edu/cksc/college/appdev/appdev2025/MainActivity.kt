@@ -39,9 +39,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
 import ph.edu.cksc.college.appdev.appdev2025.data.SampleDiaryEntries
 import ph.edu.cksc.college.appdev.appdev2025.data.moodList
+import ph.edu.cksc.college.appdev.appdev2025.screens.AboutScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.MainScreen
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -52,108 +57,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppDev2025Theme {
-                DiaryList(SampleDiaryEntries.entries)
+                // Simple Navigation patterned after
+                // https://saurabhjadhavblogs.com/ultimate-guide-to-jetpack-compose-navigation
+                AppNavigation()
             }
         }
     }
-}
 
-@Composable
-fun DiaryList(messages: MutableList<DiaryEntry>) {
-    LazyColumn {
-        items(messages) { message ->
-            DiaryEntryCard(message)
+    @Composable
+    fun AppNavigation() {
+        val navController = rememberNavController()
+        NavHost(navController = navController, startDestination = "main") {
+            composable("main") { MainScreen(navController) }
+            composable("about") { AboutScreen(navController) }
         }
     }
 }
 
-@Preview
-@Composable
-fun PreviewDiaryList() {
-    AppDev2025Theme {
-        DiaryList(SampleDiaryEntries.entries)
-    }
-}
-
-@Composable
-fun DiaryEntryCard(entry: DiaryEntry) {
-    Row(modifier = Modifier.padding(all = 8.dp)) {
-        IconButton(onClick = {
-            //navController.navigate("$DIARY_ENTRY_SCREEN/${entry.id}")
-        }) {
-            Icon(
-                imageVector = moodList[entry.mood].icon,
-                tint = moodList[entry.mood].color,
-                contentDescription = "About"
-            )
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // We keep track if the message is expanded or not in this
-        // variable
-        var isExpanded by remember { mutableStateOf(false) }
-        // surfaceColor will be updated gradually from one color to the other
-        val surfaceColor by animateColorAsState(
-            if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-        )
-
-        val formatter = DateTimeFormatter.ofPattern("EEEE MMMM d, yyyy h:mm a")
-        val date = LocalDateTime.parse(entry.dateTime)
-
-        // We toggle the isExpanded variable when we click on this Column
-        Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
-            Text(
-                text = entry.title,
-                color = MaterialTheme.colorScheme.secondary,
-                style = MaterialTheme.typography.titleSmall
-            )
-            Text(
-                text = formatter.format(date),
-                color = MaterialTheme.colorScheme.secondary,
-                style = MaterialTheme.typography.titleSmall
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                shadowElevation = 1.dp,
-                // surfaceColor color will be changing gradually from primary to surface
-                color = surfaceColor,
-                // animateContentSize will change the Surface size gradually
-                modifier = Modifier.animateContentSize().padding(1.dp)
-            ) {
-                Text(
-                    text = entry.content,
-                    modifier = Modifier.padding(all = 4.dp),
-                    // If the message is expanded, we display all its content
-                    // otherwise we only display the first line
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
-
-@Preview(name = "Light Mode", showBackground = true)
-@Preview(
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true,
-    name = "Dark Mode"
-)
-@Composable
-fun PreviewDiaryEntryCard() {
-    AppDev2025Theme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            DiaryEntryCard(
-                entry = DiaryEntry(
-                    "1", 0,
-                    "Lexi",
-                    "Test...Test...Test...",
-                    LocalDateTime.of(2024, 1, 1, 7, 30).toString()
-                )
-            )
-        }
-    }
-}
