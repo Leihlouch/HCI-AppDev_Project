@@ -1,20 +1,23 @@
 package ph.edu.cksc.college.appdev.appdev2025.screens
 
 import android.annotation.SuppressLint
-import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
@@ -30,20 +33,31 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
 import ph.edu.cksc.college.appdev.appdev2025.data.moodList
+import ph.edu.cksc.college.appdev.appdev2025.data.starList
 import ph.edu.cksc.college.appdev.appdev2025.dialog.DateDialog
 import ph.edu.cksc.college.appdev.appdev2025.dialog.TimeDialog
-import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
+import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
+import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -51,12 +65,25 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryEntryScreen(
+    id: String,
     viewModel: DiaryEntryView,
-    navController: NavHostController
+    navController: NavHostController,
+    auth: FirebaseAuth, firestore: FirebaseFirestore
 ) {
-    val entry by viewModel.diaryEntry
+    val storageService = StorageService(auth, firestore)
+    val entries = remember { mutableStateListOf(DiaryEntry()) }
+    LaunchedEffect(Unit) {
+        Log.d("Dinner", "Breakfast")
+        val entry = if (id != "")
+            storageService.getDiaryEntry(id) ?: DiaryEntry()
+        else
+            DiaryEntry()
+        entries.add(0, entry)
+        Log.d("Entry", entries[0].toString())
+        viewModel.diaryEntry = mutableStateOf(entry)
+    }
     val activity = LocalContext.current
-    val date: LocalDateTime = LocalDateTime.parse(entry.dateTime)
+    val date: LocalDateTime = LocalDateTime.parse(entries[0].dateTime)
 
     var showDatePicker by remember { mutableStateOf(false) }
     DateDialog(
@@ -79,7 +106,7 @@ fun DiaryEntryScreen(
                 ),
                 title = {
                     Text(
-                        if (entry.id.isEmpty())
+                        if (entries[0].id.isEmpty())
                             "Add Diary Entry"
                         else
                             "Edit Diary Entry"
@@ -92,7 +119,7 @@ fun DiaryEntryScreen(
                             viewModel.onDoneClick {
                                 Toast.makeText(
                                     activity,
-                                    if (entry.id.isEmpty()) "New Entry" else "Entry updated: ${entry.id}",
+                                    if (entries[0].id.isEmpty()) "New Entry" else "Entry updated: ${entries[0].id}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 navController.popBackStack()
@@ -185,6 +212,7 @@ fun DiaryEntry(
 ) {
     val entry by viewModel.diaryEntry
     var expanded by remember { mutableStateOf(false) }
+    var starExpanded by remember { mutableStateOf(false) }
     val formatter = DateTimeFormatter.ofPattern("MMM d, yy\nh:mm a")
     val date = LocalDateTime.parse(entry.dateTime)
 
@@ -192,68 +220,82 @@ fun DiaryEntry(
         modifier = Modifier.fillMaxSize(),
     ) {
         Row {
+            OutlinedTextField(
+                value = entry.title,
+                onValueChange = {
+                    viewModel.onTitleChange(it)
+                },
+                label = { Text("Title") }
+            )
+
+            // ComboBox for selecting stars, using icons to represent star count
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = {
-                    expanded = !expanded
-                }
+                expanded = starExpanded,
+                onExpandedChange = { starExpanded = !starExpanded }
             ) {
+                // Show the selected star count as icons in the label
                 OutlinedTextField(
-                    value = moodList[entry.mood].mood,
+                    value = "", // Blank value as the stars are used for the label
                     onValueChange = {},
                     readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = starExpanded) },
                     modifier = Modifier.menuAnchor(),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = moodList[entry.mood].icon,
-                            tint = moodList[entry.mood].color,
-                            contentDescription = moodList[entry.mood].mood
-                        )
-                    },
-                    label = { Text("Mood") }
+                    label = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            repeat(entry.star) {
+                                Icon(
+                                    imageVector = Icons.Filled.Star,
+                                    tint = Color.Green,
+                                    contentDescription = "Star",
+                                    modifier = Modifier.size(10.dp)
+                                )
+                            }
+                        }
+                    }
                 )
+
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    expanded = starExpanded,
+                    onDismissRequest = { starExpanded = false }
                 ) {
-                    moodList.forEachIndexed { index, item ->
+                    // Create options for 1 to 5 stars and display the stars as icons
+                    (1..5).forEach { starCount ->
                         DropdownMenuItem(
                             text = {
-                                Row() {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        tint = item.color,
-                                        contentDescription = item.mood
-                                    )
-                                    Text(
-                                        text = item.mood,
-                                        modifier = Modifier.padding(start = 16.dp)
-                                    )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Start
+                                ) {
+                                    // Show 'starCount' number of stars as icons
+                                    repeat(starCount) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Star,
+                                            tint = Color.Green,
+                                            contentDescription = "Star",
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             },
                             onClick = {
-                                viewModel.onMoodChange(index)
-                                expanded = false
+                                viewModel.onStarChange(starCount) // Store the selected star count
+                                starExpanded = false
                             }
                         )
                     }
                 }
             }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                text = formatter.format(date)
-            )
         }
+
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = entry.title,
+            value = entry.themeSong,
             onValueChange = {
-                viewModel.onTitleChange(it)
+                viewModel.onThemeSongChange(it)
             },
-            label = { Text("Title") }
+            label = { Text("Theme Song") }
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxSize(),
@@ -270,38 +312,57 @@ fun DiaryEntry(
 @Composable
 fun EditDiaryPreview() {
     val navController = rememberNavController()
-    DiaryEntryScreen(
-        viewModel = object: DiaryEntryView {
-            @SuppressLint("UnrememberedMutableState")
-            override val diaryEntry = mutableStateOf(DiaryEntry())
-            init {
-                diaryEntry.value = DiaryEntry(
-                    "random-id",
-                    0,
-                    "Lexi",
-                    "Test...Test...Test...",
-                    LocalDateTime.of(2024, 1, 1, 7, 30).toString()
-                )
-            }
-            override var modified: Boolean = true
+    AppDev2025Theme(dynamicColor = false) {
+        DiaryEntryScreen(
+            "",
+            viewModel = object : DiaryEntryView {
+                @SuppressLint("UnrememberedMutableState")
+                override var diaryEntry = mutableStateOf(DiaryEntry())
 
-            override fun onTitleChange(newValue: String) {
-                diaryEntry.value = diaryEntry.value.copy(title = newValue)
-            }
-            override fun onContentChange(newValue: String) {
-                diaryEntry.value = diaryEntry.value.copy(content = newValue)
-            }
-            override fun onMoodChange(newValue: Int) {
-                diaryEntry.value = diaryEntry.value.copy(mood = newValue)
-            }
-            override fun onDateTimeChange(newValue: LocalDateTime) {
-                val newDueDate = newValue.toString()
-                diaryEntry.value = diaryEntry.value.copy(dateTime = newDueDate)
-            }
-            override fun onDoneClick(popUpScreen: () -> Unit) {
+                init {
+                    diaryEntry.value = DiaryEntry(
+                        "merong-id",
+                        0, 5,
+                        "Lexi",
+                        "",
+                        "",
+                        LocalDateTime.of(2024, 1, 1, 7, 30).toString()
+                    )
+                }
 
-            }
-        },
-        navController = navController
-    )
+                override var modified: Boolean = true
+
+                override fun onTitleChange(newValue: String) {
+                    diaryEntry.value = diaryEntry.value.copy(title = newValue)
+                }
+
+                override fun onContentChange(newValue: String) {
+                    diaryEntry.value = diaryEntry.value.copy(content = newValue)
+                }
+
+                override fun onMoodChange(newValue: Int) {
+                    diaryEntry.value = diaryEntry.value.copy(mood = newValue)
+                }
+
+                override fun onStarChange(newValue: Int) {
+                    diaryEntry.value = diaryEntry.value.copy(star = newValue)
+                }
+
+                override fun onThemeSongChange(newValue: String) {
+                    diaryEntry.value = diaryEntry.value.copy(themeSong = newValue)
+                }
+
+                override fun onDateTimeChange(newValue: LocalDateTime) {
+                    val newDueDate = newValue.toString()
+                    diaryEntry.value = diaryEntry.value.copy(dateTime = newDueDate)
+                }
+
+                override fun onDoneClick(popUpScreen: () -> Unit) {
+
+                }
+            },
+            navController = navController,
+            FirebaseAuth.getInstance(), Firebase.firestore
+        )
+    }
 }

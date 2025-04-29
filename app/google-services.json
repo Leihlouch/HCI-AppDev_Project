@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "369471356434",
+    "project_id": "balbin-app-dev-2025",
+    "storage_bucket": "balbin-app-dev-2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369471356434:android:9c9ff18c58887367fd62cb",
+        "android_client_info": {
+          "package_name": "ph.edu.cksc.college.appdev.appdev2025"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4sRk3HBC4iCNsxYw26OUTfyjHfAqw9iw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

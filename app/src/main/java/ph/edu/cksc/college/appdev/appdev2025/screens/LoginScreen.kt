@@ -35,17 +35,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 
-data class RegistrationData(
-    val username: String = "",
+data class LoginData(
     val email: String = "",
     val password: String = "",
-    val retypePassword: String = "",
 )
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -54,7 +52,7 @@ fun RegisterScreen(navController: NavHostController) {
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    Text("Register")
+                    Text("Login")
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -69,18 +67,16 @@ fun RegisterScreen(navController: NavHostController) {
             )
         },
     ) { innerPadding ->
-        RegisterScrollContent(innerPadding)
+        LoginScrollContent(innerPadding)
     }
 }
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun RegisterScrollContent(innerPadding: PaddingValues) {
+fun LoginScrollContent(innerPadding: PaddingValues) {
     var data by mutableStateOf(RegistrationData())
-    var username by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    var retypePassword by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf("") }
 
     Box(
@@ -88,14 +84,6 @@ fun RegisterScrollContent(innerPadding: PaddingValues) {
             .padding(4.dp)
     ) {
         Column() {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = username,
-                onValueChange = {
-                    username = it
-                },
-                label = { Text("Username") }
-            )
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = email,
@@ -114,24 +102,18 @@ fun RegisterScrollContent(innerPadding: PaddingValues) {
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = retypePassword,
-                onValueChange = {
-                    retypePassword = it
-                },
-                label = { Text("Retype Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
+            Text("Leih Aldrin Balbin")
             Row(modifier = Modifier.padding(top = 8.dp)) {
                 Button(onClick = {
                     error = ""
-                    if (password != retypePassword) {
-                        error = "Password didn't match"
+                    if (email.isEmpty()) {
+                        error = "Email is required."
+                    }
+                    if (password.isEmpty()) {
+                        error = "Password is required."
                     }
                 }) {
-                    Text("Register")
+                    Text("Login")
                 }
                 Button(onClick = { /* handle click */ },
                     modifier = Modifier.padding(start = 192.dp)) {
@@ -145,10 +127,10 @@ fun RegisterScrollContent(innerPadding: PaddingValues) {
 
 @Preview()
 @Composable
-fun PreviewRegisterScreen() {
+fun PreviewLoginScreen() {
     val navController = rememberNavController()
-    AppDev2025Theme(dynamicColor = false) {
-            RegisterScreen(navController)
+    AppDev2025Theme {
+        LoginScreen(navController)
     }
 }
 
