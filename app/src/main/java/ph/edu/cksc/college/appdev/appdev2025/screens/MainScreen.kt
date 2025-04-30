@@ -8,6 +8,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.LocationOn
@@ -61,6 +63,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -217,17 +220,17 @@ fun MainScreen(
                         onClick = { navController.navigate(FAVEFOOD_SCREEN) }
                     )
                     NavigationDrawerItem(
+                        label = { Text("Stats") },
+                        selected = false,
+                        icon = { Icon(Icons.Outlined.PieChart, contentDescription = null) },
+                        onClick = { navController.navigate(STATS_SCREEN) },
+                    )
+                    NavigationDrawerItem(
                         label = { Text("Settings") },
                         selected = false,
                         icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                         badge = { Text("20") }, // Placeholder
                         onClick = { /* Handle click */ }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Stats") },
-                        selected = false,
-                        icon = { Icon(Icons.Outlined.PieChart, contentDescription = null) },
-                        onClick = { navController.navigate(STATS_SCREEN) },
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -350,15 +353,12 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
                 Icon(
                     imageVector = moodList[entry.mood].icon,
                     tint = moodList[entry.mood].color,
-                    contentDescription = "About"
+                    contentDescription = "Mood"
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
 
-            // We keep track if the message is expanded or not in this
-            // variable
             var isExpanded by remember { mutableStateOf(false) }
-            // surfaceColor will be updated gradually from one color to the other
             val surfaceColor by animateColorAsState(
                 if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
             )
@@ -366,53 +366,56 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
             val formatter = DateTimeFormatter.ofPattern("EEEE MMMM d, yyyy h:mm a")
             val date = LocalDateTime.parse(entry.dateTime)
 
-            // We toggle the isExpanded variable when we click on this Column
-            Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
-                Text(
-                    text = entry.title,
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Row() {
+            // Title and stars in the same row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Title
+                Column {
                     Text(
-                        text = formatter.format(date),
+                        text = entry.title,
                         color = MaterialTheme.colorScheme.secondary,
                         style = MaterialTheme.typography.titleSmall
                     )
-                    Box(
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 8.dp),
-                            text = "" + entry.star,
-                            color = MaterialTheme.colorScheme.secondary,
-                            style = MaterialTheme.typography.titleSmall
+                    Text(
+                        text = formatter.format(date),
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(entry.star) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Star",
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    shadowElevation = 1.dp,
-                    // surfaceColor color will be changing gradually from primary to surface
-                    color = surfaceColor,
-                    // animateContentSize will change the Surface size gradually
-                    modifier = Modifier
-                        .animateContentSize()
-                        .padding(1.dp)
-                ) {
-                    Text(
-                        text = entry.content,
-                        modifier = Modifier.padding(all = 4.dp),
-                        // If the message is expanded, we display all its content
-                        // otherwise we only display the first line
-                        maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                shadowElevation = 1.dp,
+                color = surfaceColor,
+                modifier = Modifier
+                    .animateContentSize()
+                    .padding(1.dp)
+            ) {
+                Text(
+                    text = entry.content,
+                    modifier = Modifier.padding(all = 4.dp),
+                    maxLines = if (isExpanded) Int.MAX_VALUE else 1,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }

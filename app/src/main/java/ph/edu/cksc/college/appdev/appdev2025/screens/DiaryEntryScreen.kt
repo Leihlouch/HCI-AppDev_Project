@@ -52,8 +52,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
-import ph.edu.cksc.college.appdev.appdev2025.data.moodList
-import ph.edu.cksc.college.appdev.appdev2025.data.starList
 import ph.edu.cksc.college.appdev.appdev2025.dialog.DateDialog
 import ph.edu.cksc.college.appdev.appdev2025.dialog.TimeDialog
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
@@ -228,14 +226,12 @@ fun DiaryEntry(
                 label = { Text("Title") }
             )
 
-            // ComboBox for selecting stars, using icons to represent star count
             ExposedDropdownMenuBox(
                 expanded = starExpanded,
                 onExpandedChange = { starExpanded = !starExpanded }
             ) {
-                // Show the selected star count as icons in the label
                 OutlinedTextField(
-                    value = "", // Blank value as the stars are used for the label
+                    value = entry.star.toString(),
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = starExpanded) },
@@ -261,7 +257,6 @@ fun DiaryEntry(
                     expanded = starExpanded,
                     onDismissRequest = { starExpanded = false }
                 ) {
-                    // Create options for 1 to 5 stars and display the stars as icons
                     (1..5).forEach { starCount ->
                         DropdownMenuItem(
                             text = {
@@ -269,7 +264,6 @@ fun DiaryEntry(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Start
                                 ) {
-                                    // Show 'starCount' number of stars as icons
                                     repeat(starCount) {
                                         Icon(
                                             imageVector = Icons.Filled.Star,
@@ -281,7 +275,7 @@ fun DiaryEntry(
                                 }
                             },
                             onClick = {
-                                viewModel.onStarChange(starCount) // Store the selected star count
+                                viewModel.onStarChange(starCount)
                                 starExpanded = false
                             }
                         )
