@@ -8,7 +8,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -341,54 +340,83 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
         tonalElevation = 5.dp,
         modifier = Modifier.padding(2.dp)
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .padding(all = 8.dp)
                 .fillMaxWidth()
         ) {
-            IconButton(onClick = {
-                Log.d("Id", entry.id)
-                navController.navigate("$DIARY_ENTRY_SCREEN/${entry.id}")
-            }) {
-                Icon(
-                    imageVector = moodList[entry.mood].icon,
-                    tint = moodList[entry.mood].color,
-                    contentDescription = "Mood"
+            // Content of the Diary Entry
+            Row(modifier = Modifier.fillMaxWidth()) {
+                IconButton(onClick = {
+                    Log.d("Id", entry.id)
+                    navController.navigate("$DIARY_ENTRY_SCREEN/${entry.id}")
+                }) {
+                    Icon(
+                        imageVector = moodList[entry.mood].icon,
+                        tint = moodList[entry.mood].color,
+                        contentDescription = "About"
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+
+                var isExpanded by remember { mutableStateOf(false) }
+
+                val surfaceColor by animateColorAsState(
+                    if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                 )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
 
-            var isExpanded by remember { mutableStateOf(false) }
-            val surfaceColor by animateColorAsState(
-                if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-            )
+                val formatter = DateTimeFormatter.ofPattern("EEEE MMMM d, yyyy h:mm a")
+                val date = LocalDateTime.parse(entry.dateTime)
 
-            val formatter = DateTimeFormatter.ofPattern("EEEE MMMM d, yyyy h:mm a")
-            val date = LocalDateTime.parse(entry.dateTime)
-
-            // Title and stars in the same row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Title
-                Column {
+                Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
                     Text(
                         text = entry.title,
                         color = MaterialTheme.colorScheme.secondary,
                         style = MaterialTheme.typography.titleSmall
                     )
-                    Text(
-                        text = formatter.format(date),
-                        color = MaterialTheme.colorScheme.secondary,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
 
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                    Text(
+                        text = "Theme Song: ${entry.themeSong ?: "No theme song"}",
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Row() {
+                        Text(
+                            text = formatter.format(date),
+                            color = MaterialTheme.colorScheme.secondary,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        shadowElevation = 1.dp,
+                        color = surfaceColor,
+                        modifier = Modifier
+                            .animateContentSize()
+                            .padding(1.dp)
+                    ) {
+                        Text(
+                            text = entry.content,
+                            modifier = Modifier.padding(all = 4.dp),
+                            // If the message is expanded, we display all its content
+                            // otherwise we only display the first line
+                            maxLines = if (isExpanded) Int.MAX_VALUE else 1,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(3.dp)
+            ) {
+                Row {
                     repeat(entry.star) {
                         Icon(
                             imageVector = Icons.Filled.Star,
@@ -398,24 +426,6 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
                         )
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                shadowElevation = 1.dp,
-                color = surfaceColor,
-                modifier = Modifier
-                    .animateContentSize()
-                    .padding(1.dp)
-            ) {
-                Text(
-                    text = entry.content,
-                    modifier = Modifier.padding(all = 4.dp),
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
         }
     }
