@@ -34,8 +34,10 @@ import ph.edu.cksc.college.appdev.appdev2025.screens.FavoriteFoodScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.MainScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.MapScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.RegisterScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.SNAKE_GAME_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.screens.StatsScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.ToDoScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.SnakeGameScreen
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
@@ -150,6 +152,7 @@ class MainActivity : ComponentActivity() {
             composable(ABOUT_SCREEN) { AboutScreen(navController) }
             composable(MAP_SCREEN) { MapScreen(navController) }
             composable(TODO_SCREEN) { ToDoScreen(navController, auth, firestore)}
+            composable(SNAKE_GAME_SCREEN) { SnakeGameScreen(navController) }
             composable(FAVEFOOD_SCREEN) { FavoriteFoodScreen(navController) }
             composable(STATS_SCREEN) { StatsScreen(navController) }
             composable(REGISTER_SCREEN) { RegisterScreen(navController) }

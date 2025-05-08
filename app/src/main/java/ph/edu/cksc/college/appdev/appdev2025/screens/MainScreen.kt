@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fastfood
+import androidx.compose.material.icons.outlined.Games
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.Settings
@@ -188,6 +189,12 @@ fun MainScreen(
                         icon = { Icon(Icons.Outlined.CheckBox, contentDescription = null) },
                         selected = false,
                         onClick = { navController.navigate(TODO_SCREEN) }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Snake Game") },
+                        icon = { Icon(Icons.Outlined.Games, contentDescription = null) },
+                        selected = false,
+                        onClick = { navController.navigate(SNAKE_GAME_SCREEN) }
                     )
                     NavigationDrawerItem(
                         label = { Text("Maps") },
