@@ -51,12 +51,24 @@ class TaskStorageService(
     }
 
     suspend fun save(taskEntry: TaskEntry): String {
-        firestore.collection(TASKENTRY_COLLECTION).add(taskEntry)
+        val data = hashMapOf(
+            "title" to taskEntry.title,
+            "description" to taskEntry.description,
+            "isDone" to taskEntry.isDone,
+            "timestamp" to taskEntry.timestamp
+        )
+        firestore.collection(TASKENTRY_COLLECTION).add(data).await()
         return ""
     }
 
     suspend fun update(taskEntry: TaskEntry) {
-        firestore.collection(TASKENTRY_COLLECTION).document(taskEntry.id).set(taskEntry)
+        val data = hashMapOf(
+            "title" to taskEntry.title,
+            "description" to taskEntry.description,
+            "isDone" to taskEntry.isDone,
+            "timestamp" to taskEntry.timestamp
+        )
+        firestore.collection(TASKENTRY_COLLECTION).document(taskEntry.id).set(data).await()
     }
 
     suspend fun delete(taskEntryId: String) {

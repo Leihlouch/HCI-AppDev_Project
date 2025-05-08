@@ -70,18 +70,27 @@ fun ToDoScreen(
                             openDialog.value = true
                         },
                         onToggleDone = { isDone ->
-                            // Optimistically update local state
-                            tasks = tasks.map {
-                                if (it.id == task.id) it.copy(isDone = isDone) else it
-                            }
                             coroutineScope.launch {
+                                // Update in Firestore first
                                 taskService.update(task.copy(isDone = isDone))
+                                // Then update local state
+                                tasks = tasks.map {
+                                    if (it.id == task.id) it.copy(isDone = isDone) else it
+                                }
                             }
                         },
                         onDelete = {
+                            // Update UI instantly
+                            tasks = tasks.filter { it.id != task.id }
+                            // Then delete from Firestore in background
                             coroutineScope.launch {
-                                taskService.delete(task.id)
-                                Toast.makeText(context, "Task deleted", Toast.LENGTH_SHORT).show()
+                                try {
+                                    taskService.delete(task.id)
+                                } catch (e: Exception) {
+                                    // If deletion fails, revert the UI change
+                                    tasks = tasks + task
+                                    Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     )
