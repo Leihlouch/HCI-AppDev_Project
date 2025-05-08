@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+    private var isDarkMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,21 +61,24 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainContent() {
         val sharedPref = getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val darkMode by remember { mutableStateOf(sharedPref.getBoolean("darkmode", false)) }
+        var darkMode by remember { mutableStateOf(sharedPref.getBoolean("darkmode", false)) }
 
-        AppDev2025Theme (
+        AppDev2025Theme(
             dynamicColor = false,
             darkTheme = darkMode
         ) {
-            // Simple Navigation patterned after
-            // https://saurabhjadhavblogs.com/ultimate-guide-to-jetpack-compose-navigation
-            AppNavigation()
+            AppNavigation(darkMode) { newDarkMode ->
+                darkMode = newDarkMode
+                val editor = sharedPref.edit()
+                editor.putBoolean("darkmode", newDarkMode)
+                editor.apply()
+            }
         }
     }
 
     @SuppressLint("UnrememberedMutableState")
     @Composable
-    fun AppNavigation() {
+    fun AppNavigation(darkMode: Boolean, onThemeChange: (Boolean) -> Unit) {
         val scope = rememberCoroutineScope()
         val storageService = StorageService(auth, firestore)
         val navController = rememberNavController()
@@ -133,7 +138,15 @@ class MainActivity : ComponentActivity() {
         NavHost(navController = navController, startDestination = MAIN_SCREEN) {
             composable(AUTH_SCREEN) { AuthScreen(navController, auth, firestore)
             }
-            composable(MAIN_SCREEN) { MainScreen(navController, auth, firestore) }
+            composable(MAIN_SCREEN) {
+                MainScreen(
+                    navController = navController,
+                    auth = auth,
+                    firestore = firestore,
+                    darkMode = darkMode,
+                    onThemeChange = onThemeChange
+                )
+            }
             composable(ABOUT_SCREEN) { AboutScreen(navController) }
             composable(MAP_SCREEN) { MapScreen(navController) }
             composable(TODO_SCREEN) { ToDoScreen(navController, auth, firestore)}

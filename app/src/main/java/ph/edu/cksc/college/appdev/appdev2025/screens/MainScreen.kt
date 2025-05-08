@@ -64,7 +64,10 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun MainScreen(
     navController: NavHostController,
-    auth: FirebaseAuth, firestore: FirebaseFirestore
+    auth: FirebaseAuth,
+    firestore: FirebaseFirestore,
+    darkMode: Boolean,
+    onThemeChange: (Boolean) -> Unit
 ) {
     LaunchedEffect(Unit) {
         if (auth.currentUser == null) {
@@ -90,8 +93,6 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val activity = LocalActivity.current
-    val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    var darkMode by remember { mutableStateOf(sharedPref.getBoolean("darkmode", false)) }
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -159,16 +160,20 @@ fun MainScreen(
                             activity?.finish()
                         }
                     )
-                    Row() {
-                        Text("Dark mode")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = if (darkMode) "Dark mode" else "Light mode",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                         Switch(
                             checked = darkMode,
-                            onCheckedChange = {
-                                darkMode = it
-                                val editor = sharedPref.edit()
-                                editor.putBoolean("darkmode", darkMode)
-                                editor.apply()
-                            }
+                            onCheckedChange = { onThemeChange(it) }
                         )
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -329,7 +334,7 @@ fun DiaryList(messages: MutableList<DiaryEntry>) {
 fun PreviewMainScreen() {
     val navController = rememberNavController()
     AppDev2025Theme(dynamicColor = false) {
-        MainScreen(navController, FirebaseAuth.getInstance(), Firebase.firestore)
+        MainScreen(navController, FirebaseAuth.getInstance(), Firebase.firestore, false, {})
     }
 }
 
