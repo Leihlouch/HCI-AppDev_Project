@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Games
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -195,6 +196,12 @@ fun MainScreen(
                         icon = { Icon(Icons.Outlined.Games, contentDescription = null) },
                         selected = false,
                         onClick = { navController.navigate(SNAKE_GAME_SCREEN) }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Block Blast") },
+                        icon = { Icon(Icons.Outlined.Star, contentDescription = null) },
+                        selected = false,
+                        onClick = { navController.navigate(BLOCK_BLAST_SCREEN) }
                     )
                     NavigationDrawerItem(
                         label = { Text("Maps") },
