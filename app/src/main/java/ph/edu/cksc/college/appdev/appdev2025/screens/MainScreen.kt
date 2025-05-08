@@ -8,17 +8,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +18,7 @@ import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -37,34 +28,11 @@ import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -108,10 +76,14 @@ fun MainScreen(
     val storageService = StorageService(auth, firestore)
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
-    //val dataList = storageService.entries.collectAsState(emptyList())
-    val dataList =
-        storageService.getFilteredEntries(searchQuery).collectAsState(initial = emptyList())
-    Log.d("User", storageService.currentUser.toString())
+    val firestoreEntries by storageService.getFilteredEntries(searchQuery).collectAsState(initial = emptyList())
+    var entries by remember { mutableStateOf(firestoreEntries) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Keep local entries in sync with Firestore
+    LaunchedEffect(firestoreEntries) {
+        entries = firestoreEntries
+    }
 
     var isSearchExpanded by remember { mutableStateOf(false) }
 
@@ -175,8 +147,6 @@ fun MainScreen(
                             selected = false,
                             onClick = {
                                 authService.logoutUser()
-                                // crashes because auth.signOut takes time so just exit app
-                                //navController.navigate(AUTH_SCREEN)
                                 activity?.finish()
                             }
                         )
@@ -301,7 +271,19 @@ fun MainScreen(
                 }
             }
         ) { innerPadding ->
-            MainScrollContent(dataList.value, innerPadding, navController)
+            MainScrollContent(
+                dataList = entries,
+                innerPadding = innerPadding,
+                navController = navController,
+                onDelete = { id ->
+                    // Optimistically remove from local list
+                    entries = entries.filter { it.id != id }
+                    // Delete from Firestore in the background
+                    coroutineScope.launch {
+                        storageService.delete(id)
+                    }
+                }
+            )
         }
     }
 }
@@ -310,14 +292,19 @@ fun MainScreen(
 fun MainScrollContent(
     dataList: List<DiaryEntry>,
     innerPadding: PaddingValues,
-    navController: NavHostController
+    navController: NavHostController,
+    onDelete: (String) -> Unit
 ) {
     Box(
         modifier = Modifier.padding(innerPadding)
     ) {
         LazyColumn {
             items(dataList) { item ->
-                DiaryEntryCard(item, navController)
+                DiaryEntryCard(
+                    entry = item,
+                    navController = navController,
+                    onDelete = onDelete
+                )
             }
         }
     }
@@ -328,7 +315,11 @@ fun DiaryList(messages: MutableList<DiaryEntry>) {
     val navController = rememberNavController()
     LazyColumn {
         items(messages) { message ->
-            DiaryEntryCard(message, navController)
+            DiaryEntryCard(
+                entry = message,
+                navController = navController,
+                onDelete = {} // Dummy lambda for previews or non-deleting context
+            )
         }
     }
 }
@@ -343,7 +334,11 @@ fun PreviewMainScreen() {
 }
 
 @Composable
-fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
+fun DiaryEntryCard(
+    entry: DiaryEntry,
+    navController: NavHostController,
+    onDelete: (String) -> Unit
+) {
     Surface(
         tonalElevation = 5.dp,
         modifier = Modifier.padding(2.dp)
@@ -410,8 +405,6 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
                         Text(
                             text = entry.content,
                             modifier = Modifier.padding(all = 4.dp),
-                            // If the message is expanded, we display all its content
-                            // otherwise we only display the first line
                             maxLines = if (isExpanded) Int.MAX_VALUE else 1,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -419,6 +412,7 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
                 }
             }
 
+            // Stars
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -434,6 +428,20 @@ fun DiaryEntryCard(entry: DiaryEntry, navController: NavHostController) {
                         )
                     }
                 }
+            }
+
+            // Trash bin icon at the bottom right
+            IconButton(
+                onClick = { onDelete(entry.id) },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Delete Entry",
+                    tint = Color.Red
+                )
             }
         }
     }
@@ -457,7 +465,8 @@ fun PreviewDiaryEntryCard() {
                     "Test...Test...Test...",
                     LocalDateTime.of(2024, 1, 1, 7, 30).toString()
                 ),
-                navController
+                navController = navController,
+                onDelete = {} // Dummy lambda for preview
             )
         }
     }
