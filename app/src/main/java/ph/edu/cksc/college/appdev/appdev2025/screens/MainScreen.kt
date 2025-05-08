@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.LocationOn
@@ -82,6 +83,7 @@ import ph.edu.cksc.college.appdev.appdev2025.FAVEFOOD_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.MAP_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.R
 import ph.edu.cksc.college.appdev.appdev2025.STATS_SCREEN
+import ph.edu.cksc.college.appdev.appdev2025.TODO_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
 import ph.edu.cksc.college.appdev.appdev2025.data.moodList
 import ph.edu.cksc.college.appdev.appdev2025.service.AuthService
@@ -205,6 +207,12 @@ fun MainScreen(
                         "App",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.titleMedium
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("To-Do List") },
+                        icon = { Icon(Icons.Outlined.CheckBox, contentDescription = null) },
+                        selected = false,
+                        onClick = { navController.navigate(TODO_SCREEN) }
                     )
                     NavigationDrawerItem(
                         label = { Text("Maps") },

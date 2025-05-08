@@ -34,6 +34,7 @@ import ph.edu.cksc.college.appdev.appdev2025.screens.MainScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.MapScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.RegisterScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.StatsScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.ToDoScreen
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
@@ -135,6 +136,7 @@ class MainActivity : ComponentActivity() {
             composable(MAIN_SCREEN) { MainScreen(navController, auth, firestore) }
             composable(ABOUT_SCREEN) { AboutScreen(navController) }
             composable(MAP_SCREEN) { MapScreen(navController) }
+            composable(TODO_SCREEN) { ToDoScreen(navController, auth, firestore)}
             composable(FAVEFOOD_SCREEN) { FavoriteFoodScreen(navController) }
             composable(STATS_SCREEN) { StatsScreen(navController) }
             composable(REGISTER_SCREEN) { RegisterScreen(navController) }
