@@ -52,6 +52,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
+import ph.edu.cksc.college.appdev.appdev2025.data.moodList
 import ph.edu.cksc.college.appdev.appdev2025.dialog.DateDialog
 import ph.edu.cksc.college.appdev.appdev2025.dialog.TimeDialog
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
@@ -217,6 +218,62 @@ fun DiaryEntry(
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
+        Row {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = {
+                    expanded = !expanded
+                }
+            ) {
+                OutlinedTextField(
+                    value = moodList[entry.mood].mood,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor(),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = moodList[entry.mood].icon,
+                            tint = moodList[entry.mood].color,
+                            contentDescription = moodList[entry.mood].mood
+                        )
+                    },
+                    label = { Text("Mood") }
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    moodList.forEachIndexed { index, item ->
+                        DropdownMenuItem(
+                            text = {
+                                Row() {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        tint = item.color,
+                                        contentDescription = item.mood
+                                    )
+                                    Text(
+                                        text = item.mood,
+                                        modifier = Modifier.padding(start = 16.dp)
+                                    )
+                                }
+                            },
+                            onClick = {
+                                viewModel.onMoodChange(index)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp),
+                text = formatter.format(date)
+            )
+        }
         Row {
             OutlinedTextField(
                 value = entry.title,
