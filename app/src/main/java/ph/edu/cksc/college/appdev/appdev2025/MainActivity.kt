@@ -89,15 +89,6 @@ class MainActivity : ComponentActivity() {
         val viewModel = object: DiaryEntryView {
             @SuppressLint("UnrememberedMutableState")
             override var diaryEntry = mutableStateOf(DiaryEntry())
-            init {
-                diaryEntry.value = DiaryEntry(
-                    "",
-                    0, 1,
-                    "Lexi",
-                    "Test...Test...Test...",
-                    LocalDateTime.of(2024, 1, 1, 7, 30).toString()
-                )
-            }
             override var modified: Boolean = false
 
             override fun onTitleChange(newValue: String) {
@@ -136,12 +127,10 @@ class MainActivity : ComponentActivity() {
                     }
                     popUpScreen()
                 }
-                //navController.popBackStack()
             }
         }
         NavHost(navController = navController, startDestination = MAIN_SCREEN) {
-            composable(AUTH_SCREEN) { AuthScreen(navController, auth, firestore)
-            }
+            composable(AUTH_SCREEN) { AuthScreen(navController, auth, firestore) }
             composable(MAIN_SCREEN) {
                 MainScreen(
                     navController = navController,
@@ -163,16 +152,15 @@ class MainActivity : ComponentActivity() {
                 arguments = listOf(navArgument("id") { type = NavType.StringType })
             ) { backStackEntry ->
                 val arguments = requireNotNull(backStackEntry.arguments)
-                val id = arguments.getString("id") ?: "1"
-                Log.d("Test", "id: " + id)
-                for (entry in SampleDiaryEntries.entries) {
-                    if (entry.id == id) {
-                        viewModel.diaryEntry = mutableStateOf(entry)
-                        break
+                val id = arguments.getString("id") ?: ""
+                LaunchedEffect(id) {
+                    if (id.isNotEmpty()) {
+                        val entry = storageService.getDiaryEntry(id)
+                        if (entry != null) {
+                            viewModel.diaryEntry.value = entry
+                        }
                     }
                 }
-                //viewModel.diaryEntry
-                //val viewModel: DiaryEntryViewModel = hiltViewModel()
                 DiaryEntryScreen(id = id, navController = navController, viewModel = viewModel, auth = auth, firestore = firestore)
             }
         }
