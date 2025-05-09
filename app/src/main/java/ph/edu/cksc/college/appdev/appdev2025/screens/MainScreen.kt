@@ -18,7 +18,13 @@ import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -81,7 +87,7 @@ fun MainScreen(
     val storageService = StorageService(auth, firestore)
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
-    val firestoreEntries by storageService.getFilteredEntries(searchQuery).collectAsState(initial = emptyList())
+    val firestoreEntries by storageService.searchEntries(searchQuery).collectAsState(initial = emptyList())
     var entries by remember { mutableStateOf(firestoreEntries) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -89,6 +95,12 @@ fun MainScreen(
     LaunchedEffect(firestoreEntries) {
         entries = firestoreEntries
     }
+
+    // Add state for deleted entries
+    var deletedEntryIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Filter out deleted entries immediately
+    val filteredEntries = entries.filter { it.id !in deletedEntryIds }
 
     var isSearchExpanded by remember { mutableStateOf(false) }
 
@@ -243,7 +255,19 @@ fun MainScreen(
                             titleContentColor = MaterialTheme.colorScheme.primary,
                         ),
                         title = {
-                            Text("App Dev Diary")
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("App Dev Diary")
+                                IconButton(onClick = { isSearchExpanded = !isSearchExpanded }) {
+                                    Icon(
+                                        imageVector = if (isSearchExpanded) Icons.Filled.Close else Icons.Filled.Search,
+                                        contentDescription = if (isSearchExpanded) "Close Search" else "Search"
+                                    )
+                                }
+                            }
                         },
                         navigationIcon = {
                             IconButton(onClick = {
@@ -259,15 +283,13 @@ fun MainScreen(
                             }
                         },
                         actions = {
-                            IconButton(onClick = {
-                                isSearchExpanded = !isSearchExpanded
-                            }) {
+                            IconButton(onClick = { onThemeChange(!darkMode) }) {
                                 Icon(
-                                    imageVector = Icons.Filled.Search,
-                                    contentDescription = "Search",
+                                    imageVector = if (darkMode) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                                    contentDescription = if (darkMode) "Light Mode" else "Dark Mode"
                                 )
                             }
-                        },
+                        }
                     )
                     if (isSearchExpanded) {
                         SearchBar(
@@ -276,33 +298,90 @@ fun MainScreen(
                             onSearch = { },
                             active = false,
                             onActiveChange = { },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            placeholder = { Text("Search by title, content, mood, or theme song") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = "Search"
+                                )
+                            },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { searchQuery = "" }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Clear,
+                                            contentDescription = "Clear Search"
+                                        )
+                                    }
+                                }
+                            }
                         ) {
+                            // Search suggestions could go here
                         }
                     }
                 }
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = {
-                    navController.navigate("$DIARY_ENTRY_SCREEN/")
-                }) {
-                    Icon(Icons.Filled.Add, "")
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate("$DIARY_ENTRY_SCREEN/")
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add Entry",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         ) { innerPadding ->
-            MainScrollContent(
-                dataList = entries,
-                innerPadding = innerPadding,
-                navController = navController,
-                onDelete = { id ->
-                    // Optimistically remove from local list
-                    entries = entries.filter { it.id != id }
-                    // Delete from Firestore in the background
-                    coroutineScope.launch {
-                        storageService.delete(id)
+            if (filteredEntries.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = if (searchQuery.isNotEmpty()) Icons.Filled.Search else Icons.Filled.Edit,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (searchQuery.isNotEmpty()) 
+                                "No entries found for '$searchQuery'" 
+                            else 
+                                "No diary entries yet",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-            )
+            } else {
+                MainScrollContent(
+                    dataList = filteredEntries,
+                    innerPadding = innerPadding,
+                    navController = navController,
+                    onDelete = { id ->
+                        coroutineScope.launch {
+                            // Add to deleted entries set immediately
+                            deletedEntryIds = deletedEntryIds + id
+                            // Then delete from Firestore
+                            storageService.delete(id)
+                        }
+                    }
+                )
+            }
         }
     }
 }

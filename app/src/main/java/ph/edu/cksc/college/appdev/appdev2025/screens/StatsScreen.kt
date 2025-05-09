@@ -60,7 +60,10 @@ fun StatsScreen(navController: NavHostController) {
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    Text("Stats")
+                    Text(
+                        "Stats",
+                        color = Color.White
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -68,7 +71,8 @@ fun StatsScreen(navController: NavHostController) {
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = Color.White
                         )
                     }
                 },

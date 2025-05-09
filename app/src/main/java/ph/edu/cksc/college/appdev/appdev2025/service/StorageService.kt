@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
+import ph.edu.cksc.college.appdev.appdev2025.data.moodList
 
 data class User(
     val id: String = "",
@@ -77,6 +78,41 @@ class StorageService(
         }
     }
 
+    // Add new search function
+    fun searchEntries(query: String): Flow<List<DiaryEntry>> {
+        return flow {
+            val snapshot = firestore
+                .collection(DIARYENTRY_COLLECTION)
+                .whereEqualTo(USER_ID_FIELD, auth.currentUser?.uid)
+                .orderBy(DATETIME_FIELD, Query.Direction.DESCENDING)
+                .get().await()
+            
+            val list: MutableList<DiaryEntry> = ArrayList()
+            for (document in snapshot) {
+                val data = document.data
+                val date = data["dateTime"] as String
+                val entry = DiaryEntry(document.id,
+                    (data["mood"] as Long).toInt(),
+                    (data["star"] as Long).toInt(),
+                    data["title"] as String,
+                    data["themeSong"] as String,
+                    data["content"] as String,
+                    if (date.endsWith('Z')) date.substring(0, date.length - 1) else date,
+                    data["userId"] as String)
+                
+                // Filter entries based on search query
+                if (query.isEmpty() ||
+                    entry.title.contains(query, ignoreCase = true) ||
+                    entry.content.contains(query, ignoreCase = true) ||
+                    entry.themeSong.contains(query, ignoreCase = true) ||
+                    moodList[entry.mood].mood.contains(query, ignoreCase = true)) {
+                    list.add(entry)
+                }
+            }
+            emit(list)
+        }
+    }
+
     suspend fun getDiaryEntry(diaryEntryId: String): DiaryEntry? =
         toObject(firestore.collection(DIARYENTRY_COLLECTION).document(diaryEntryId).get().await())
 
@@ -99,12 +135,16 @@ class StorageService(
 
     suspend fun save(diaryEntry: DiaryEntry): String {
         val updatedDiaryEntry = diaryEntry.copy(userId = auth.currentUser?.uid ?: "")
-        firestore.collection(DIARYENTRY_COLLECTION).add(updatedDiaryEntry)//.await().id
-        return "";
+        val docRef = firestore.collection(DIARYENTRY_COLLECTION).add(updatedDiaryEntry).await()
+        return docRef.id
     }
 
     suspend fun update(diaryEntry: DiaryEntry) {
-        firestore.collection(DIARYENTRY_COLLECTION).document(diaryEntry.id).set(diaryEntry)//.await()
+        val updatedDiaryEntry = diaryEntry.copy(userId = auth.currentUser?.uid ?: "")
+        firestore.collection(DIARYENTRY_COLLECTION)
+            .document(diaryEntry.id)
+            .set(updatedDiaryEntry)
+            .await()
     }
 
     suspend fun delete(diaryEntryId: String) {
