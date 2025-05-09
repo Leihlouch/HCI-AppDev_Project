@@ -4,44 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Maps</title>
-
+    <title>CKS College Maps</title>
+    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
+    
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <style>
-        #map {
-            height: 100vh;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
         }
-
-        #logo {
-            width: 50%;
+        .header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 1.8rem;
+        }
+        #map {
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+        .location-popup {
+            text-align: center;
+            padding: 5px;
+        }
+        .location-popup b {
+            color: #0984E3;
+            font-size: 1.1em;
         }
     </style>
 </head>
 
 <body>
+    <div class="header">
+        <h1>CKS College Main Campus Map</h1>
+    </div>
+    <div id="map"></div>
 
-<h1 style="text-align: center;">Maps Here</h1>
+    <script>
+        // Initialize map with CKS College coordinates
+        var map = L.map('map').setView([14.607666, 120.976698], 15);
 
-<div id="map"></div>
+        // Add tile layer
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-<script>
-    var map = L.map('map').setView([51.505, -0.09], 13);
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-
-    var marker = L.marker([12.8797, 121.7740]).addTo(map);
-
-    marker.bindPopup("<b>My Location!</b><br>I am here").openPopup();
-</script>
+        // Add marker for CKS College
+        var marker = L.marker([14.607666, 120.976698]).addTo(map);
+        marker.bindPopup("<div class='location-popup'><b>CKS College</b><br>Main Campus</div>").openPopup();
+    </script>
 </body>
 </html>
