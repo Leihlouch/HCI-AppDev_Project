@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import ph.edu.cksc.college.appdev.appdev2025.ABOUT_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.AUTH_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.DIARY_ENTRY_SCREEN
+import ph.edu.cksc.college.appdev.appdev2025.EXPENSE_TRACKER_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.FAVEFOOD_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.MAP_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.R
@@ -202,6 +203,12 @@ fun MainScreen(
                         icon = { Icon(Icons.Outlined.CheckBox, contentDescription = null) },
                         selected = false,
                         onClick = { navController.navigate(TODO_SCREEN) }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Expense Tracker") },
+                        icon = { Icon(Icons.Outlined.Fastfood, contentDescription = null) },
+                        selected = false,
+                        onClick = { navController.navigate(EXPENSE_TRACKER_SCREEN) }
                     )
                     NavigationDrawerItem(
                         label = { Text("Snake Game") },

@@ -13,6 +13,7 @@ const val SPLASH_SCREEN = "SplashScreen"
 const val SETTINGS_SCREEN = "SettingsScreen"
 const val STATS_SCREEN = "StatsScreen"
 const val SIGN_UP_SCREEN = "SignUpScreen"
+const val EXPENSE_TRACKER_SCREEN = "ExpenseTrackerScreen"
 //const val TASKS_SCREEN = "TasksScreen"
 //const val EDIT_TASK_SCREEN = "EditTaskScreen"
 

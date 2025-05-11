@@ -27,6 +27,7 @@ class StorageService(
 ) {
     private val collection get() = firestore.collection(DIARYENTRY_COLLECTION)
         .whereEqualTo(USER_ID_FIELD, auth.currentUser?.uid)
+
     val currentUser: Flow<User>
         get() = callbackFlow {
             val listener =

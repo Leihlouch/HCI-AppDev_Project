@@ -40,6 +40,7 @@ import ph.edu.cksc.college.appdev.appdev2025.screens.ToDoScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.SnakeGameScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.BlockBlastScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.BLOCK_BLAST_SCREEN
+import ph.edu.cksc.college.appdev.appdev2025.screens.ExpenseTrackerScreen
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
@@ -148,6 +149,7 @@ class MainActivity : ComponentActivity() {
             composable(STATS_SCREEN) { StatsScreen(navController) }
             composable(REGISTER_SCREEN) { RegisterScreen(navController) }
             composable(BLOCK_BLAST_SCREEN) { BlockBlastScreen(navController) }
+            composable(EXPENSE_TRACKER_SCREEN) { ExpenseTrackerScreen(navController, auth, firestore) }
             composable("$DIARY_ENTRY_SCREEN/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.StringType })
             ) { backStackEntry ->
