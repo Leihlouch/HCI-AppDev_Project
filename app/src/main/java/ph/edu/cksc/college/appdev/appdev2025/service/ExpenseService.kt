@@ -31,15 +31,29 @@ class ExpenseService(
 
     suspend fun saveExpense(expense: ExpenseEntry): String {
         val updatedExpense = expense.copy(userId = auth.currentUser?.uid ?: "")
-        val docRef = firestore.collection(EXPENSE_COLLECTION).add(updatedExpense).await()
+        val data = hashMapOf(
+            "category" to updatedExpense.category,
+            "amount" to updatedExpense.amount,
+            "description" to updatedExpense.description,
+            "dateTime" to updatedExpense.dateTime,
+            "userId" to updatedExpense.userId
+        )
+        val docRef = firestore.collection(EXPENSE_COLLECTION).add(data).await()
         return docRef.id
     }
 
     suspend fun updateExpense(expense: ExpenseEntry) {
         val updatedExpense = expense.copy(userId = auth.currentUser?.uid ?: "")
+        val data = hashMapOf(
+            "category" to updatedExpense.category,
+            "amount" to updatedExpense.amount,
+            "description" to updatedExpense.description,
+            "dateTime" to updatedExpense.dateTime,
+            "userId" to updatedExpense.userId
+        )
         firestore.collection(EXPENSE_COLLECTION)
             .document(expense.id)
-            .set(updatedExpense)
+            .set(data)
             .await()
     }
 
@@ -51,25 +65,36 @@ class ExpenseService(
         toExpenseObject(firestore.collection(EXPENSE_COLLECTION).document(expenseId).get().await())
 
     private fun toExpenseObject(document: DocumentSnapshot?): ExpenseEntry? {
-        if (document == null)
-            return null
-        val data = document.data
-        val date = data?.get("dateTime") as String
-        val entry = ExpenseEntry(
-            document.id,
-            (data["category"] as Long).toInt(),
-            (data["amount"] as Double),
-            data["description"] as String,
-            if (date.endsWith('Z')) date.substring(0, date.length - 1) else date,
-            data["userId"] as String
-        )
-        Log.d("Expense", "${document.id} => ${document.data}")
-        return entry
+        if (document == null) return null
+        val data = document.data ?: return null
+        return try {
+            ExpenseEntry(
+                id = document.id,
+                category = (data["category"] as? Long)?.toInt() ?: 0,
+                amount = (data["amount"] as? Number)?.toDouble() ?: 0.0,
+                description = data["description"] as? String ?: "",
+                dateTime = data["dateTime"] as? String ?: "",
+                userId = data["userId"] as? String ?: ""
+            )
+        } catch (e: Exception) {
+            Log.e("ExpenseService", "Error mapping expense: ", e)
+            null
+        }
+    }
+
+    suspend fun clearAllExpenses() {
+        val userId = auth.currentUser?.uid ?: return
+        val snapshot = firestore.collection(EXPENSE_COLLECTION)
+            .whereEqualTo(USER_ID_FIELD, userId)
+            .get().await()
+        for (doc in snapshot.documents) {
+            firestore.collection(EXPENSE_COLLECTION).document(doc.id).delete().await()
+        }
     }
 
     companion object {
         private const val USER_ID_FIELD = "userId"
         private const val DATETIME_FIELD = "dateTime"
-        private const val EXPENSE_COLLECTION = "expenses"
+        private const val EXPENSE_COLLECTION = "expenseEntries"
     }
 } 
