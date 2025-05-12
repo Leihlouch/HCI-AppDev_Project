@@ -3,7 +3,6 @@ package ph.edu.cksc.college.appdev.appdev2025
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,7 +24,6 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
-import ph.edu.cksc.college.appdev.appdev2025.data.SampleDiaryEntries
 import ph.edu.cksc.college.appdev.appdev2025.screens.AboutScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.AuthScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.DiaryEntryScreen
@@ -42,6 +40,7 @@ import ph.edu.cksc.college.appdev.appdev2025.screens.BlockBlastScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.BLOCK_BLAST_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.screens.ExpenseTrackerScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.ExpenseEntryViewScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.SettingsScreen
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
@@ -151,6 +150,11 @@ class MainActivity : ComponentActivity() {
             composable(REGISTER_SCREEN) { RegisterScreen(navController) }
             composable(BLOCK_BLAST_SCREEN) { BlockBlastScreen(navController) }
             composable(EXPENSE_TRACKER_SCREEN) { ExpenseTrackerScreen(navController, auth, firestore) }
+            composable(SETTINGS_SCREEN) { 
+                SettingsScreen(
+                    
+                )
+            }
             composable("$DIARY_ENTRY_SCREEN/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.StringType })
             ) { backStackEntry ->

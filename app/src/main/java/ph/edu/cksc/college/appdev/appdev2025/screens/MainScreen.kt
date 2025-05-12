@@ -60,6 +60,7 @@ import ph.edu.cksc.college.appdev.appdev2025.EXPENSE_TRACKER_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.FAVEFOOD_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.MAP_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.R
+import ph.edu.cksc.college.appdev.appdev2025.SETTINGS_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.STATS_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.TODO_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
@@ -245,8 +246,7 @@ fun MainScreen(
                         label = { Text("Settings") },
                         selected = false,
                         icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                        badge = { Text("20") }, // Placeholder
-                        onClick = { /* Handle click */ }
+                        onClick = { navController.navigate(SETTINGS_SCREEN) }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
