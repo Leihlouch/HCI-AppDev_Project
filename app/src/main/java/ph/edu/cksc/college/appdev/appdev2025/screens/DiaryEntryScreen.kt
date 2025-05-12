@@ -303,7 +303,7 @@ fun DiaryEntry(
                             repeat(entry.star) {
                                 Icon(
                                     imageVector = Icons.Filled.Star,
-                                    tint = Color.Green,
+                                    tint = Color.Yellow,
                                     contentDescription = "Star",
                                     modifier = Modifier.size(10.dp)
                                 )
@@ -326,7 +326,7 @@ fun DiaryEntry(
                                     repeat(starCount) {
                                         Icon(
                                             imageVector = Icons.Filled.Star,
-                                            tint = Color.Green,
+                                            tint = Color.Yellow,
                                             contentDescription = "Star",
                                             modifier = Modifier.size(18.dp)
                                         )
