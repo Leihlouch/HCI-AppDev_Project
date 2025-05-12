@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fastfood
@@ -206,7 +207,7 @@ fun MainScreen(
                     )
                     NavigationDrawerItem(
                         label = { Text("Expense Tracker") },
-                        icon = { Icon(Icons.Outlined.Fastfood, contentDescription = null) },
+                        icon = { Icon(Icons.Outlined.AttachMoney, contentDescription = null) },
                         selected = false,
                         onClick = { navController.navigate(EXPENSE_TRACKER_SCREEN) }
                     )

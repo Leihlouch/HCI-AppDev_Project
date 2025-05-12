@@ -41,6 +41,7 @@ import ph.edu.cksc.college.appdev.appdev2025.screens.SnakeGameScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.BlockBlastScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.BLOCK_BLAST_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.screens.ExpenseTrackerScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.ExpenseEntryViewScreen
 import ph.edu.cksc.college.appdev.appdev2025.service.StorageService
 import ph.edu.cksc.college.appdev.appdev2025.ui.theme.AppDev2025Theme
 import java.time.LocalDateTime
@@ -164,6 +165,15 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 DiaryEntryScreen(id = id, navController = navController, viewModel = viewModel, auth = auth, firestore = firestore)
+            }
+            composable("expense_entry/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id") ?: ""
+                ExpenseEntryViewScreen(
+                    expenseId = id,
+                    navController = navController,
+                    auth = auth,
+                    firestore = firestore
+                )
             }
         }
     }

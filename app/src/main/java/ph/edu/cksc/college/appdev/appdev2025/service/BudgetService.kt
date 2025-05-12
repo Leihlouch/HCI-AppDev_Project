@@ -8,20 +8,17 @@ class BudgetService(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) {
-    private val collection get() = firestore.collection(BUDGET_COLLECTION)
-    private val userId get() = auth.currentUser?.uid ?: ""
+    private val budgetsCollection = firestore.collection("budgets")
 
     suspend fun getBudget(): Double {
-        val doc = collection.document(userId).get().await()
-        return (doc.get("amount") as? Number)?.toDouble() ?: 0.0
+        val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+        val doc = budgetsCollection.document(userId).get().await()
+        return doc.getDouble("amount") ?: 0.0
     }
 
     suspend fun setBudget(amount: Double) {
-        val data = mapOf(
-            "amount" to amount,
-            "userId" to userId
-        )
-        collection.document(userId).set(data).await()
+        val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+        budgetsCollection.document(userId).set(mapOf("amount" to amount)).await()
     }
 
     companion object {
