@@ -152,7 +152,9 @@ class MainActivity : ComponentActivity() {
             composable(EXPENSE_TRACKER_SCREEN) { ExpenseTrackerScreen(navController, auth, firestore) }
             composable(SETTINGS_SCREEN) { 
                 SettingsScreen(
-                    
+                    navController = navController,
+                    darkMode = darkMode,
+                    onThemeChange = onThemeChange
                 )
             }
             composable("$DIARY_ENTRY_SCREEN/{id}",
