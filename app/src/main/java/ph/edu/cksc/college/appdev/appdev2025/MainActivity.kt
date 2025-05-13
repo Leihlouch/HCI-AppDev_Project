@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
             composable(REGISTER_SCREEN) { RegisterScreen(navController) }
             composable(BLOCK_BLAST_SCREEN) { BlockBlastScreen(navController) }
             composable(EXPENSE_TRACKER_SCREEN) { ExpenseTrackerScreen(navController, auth, firestore) }
-            composable(CALCULATOR_SCREEN) { CalculatorScreen() }
+            composable(CALCULATOR_SCREEN) { CalculatorScreen(navController) }
             composable(SETTINGS_SCREEN) { 
                 SettingsScreen(
                     navController = navController,

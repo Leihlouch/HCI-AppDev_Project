@@ -127,6 +127,16 @@ fun ExpenseTrackerScreen(
                             contentDescription = "Back"
                         )
                     }
+                },
+                actions = {
+                    TextButton(onClick = {
+                        expenses = emptyList()
+                        coroutineScope.launch {
+                            expenseService.clearAll()
+                        }
+                    }) {
+                        Text("Clear All", color = MaterialTheme.colorScheme.error)
+                    }
                 }
             )
         },

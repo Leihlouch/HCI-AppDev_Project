@@ -299,6 +299,14 @@ fun MainScreen(
                             }
                         },
                         actions = {
+                            TextButton(onClick = {
+                                coroutineScope.launch {
+                                    storageService.clearAll()
+                                    entries = emptyList()
+                                }
+                            }) {
+                                Text("Clear All", color = MaterialTheme.colorScheme.error)
+                            }
                             IconButton(onClick = { onThemeChange(!darkMode) }) {
                                 Icon(
                                     imageVector = if (darkMode) Icons.Filled.LightMode else Icons.Filled.DarkMode,

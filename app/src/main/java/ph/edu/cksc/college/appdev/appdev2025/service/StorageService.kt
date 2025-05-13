@@ -152,6 +152,16 @@ class StorageService(
         firestore.collection(DIARYENTRY_COLLECTION).document(diaryEntryId).delete().await()
     }
 
+    suspend fun clearAll() {
+        val userId = auth.currentUser?.uid ?: return
+        val snapshot = firestore.collection(DIARYENTRY_COLLECTION)
+            .whereEqualTo(USER_ID_FIELD, userId)
+            .get().await()
+        for (document in snapshot.documents) {
+            firestore.collection(DIARYENTRY_COLLECTION).document(document.id).delete().await()
+        }
+    }
+
     companion object {
         private const val USER_ID_FIELD = "userId"
         private const val MOOD_FIELD = "mood"

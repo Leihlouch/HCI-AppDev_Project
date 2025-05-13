@@ -75,6 +75,13 @@ class TaskStorageService(
         firestore.collection(TASKENTRY_COLLECTION).document(taskEntryId).delete().await()
     }
 
+    suspend fun clearAll() {
+        val snapshot = firestore.collection(TASKENTRY_COLLECTION).get().await()
+        for (document in snapshot.documents) {
+            firestore.collection(TASKENTRY_COLLECTION).document(document.id).delete().await()
+        }
+    }
+
     companion object {
         private const val TIMESTAMP_FIELD = "timestamp"
         private const val TASKENTRY_COLLECTION = "taskentries"

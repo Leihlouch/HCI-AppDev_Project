@@ -82,4 +82,12 @@ class ExpenseService(
         }
         expensesCollection.document(expenseId).delete().await()
     }
+
+    suspend fun clearAll() {
+        val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+        val snapshot = expensesCollection.whereEqualTo("userId", userId).get().await()
+        for (document in snapshot.documents) {
+            expensesCollection.document(document.id).delete().await()
+        }
+    }
 } 
