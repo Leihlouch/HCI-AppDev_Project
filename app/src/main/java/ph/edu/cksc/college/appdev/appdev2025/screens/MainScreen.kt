@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fastfood
@@ -55,6 +56,7 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import ph.edu.cksc.college.appdev.appdev2025.ABOUT_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.AUTH_SCREEN
+import ph.edu.cksc.college.appdev.appdev2025.CALCULATOR_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.DIARY_ENTRY_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.EXPENSE_TRACKER_SCREEN
 import ph.edu.cksc.college.appdev.appdev2025.FAVEFOOD_SCREEN
@@ -241,6 +243,12 @@ fun MainScreen(
                         selected = false,
                         icon = { Icon(Icons.Outlined.PieChart, contentDescription = null) },
                         onClick = { navController.navigate(STATS_SCREEN) },
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Calculator") },
+                        selected = false,
+                        icon = { Icon(Icons.Outlined.Calculate, contentDescription = null) },
+                        onClick = { navController.navigate(CALCULATOR_SCREEN) }
                     )
                     NavigationDrawerItem(
                         label = { Text("Settings") },

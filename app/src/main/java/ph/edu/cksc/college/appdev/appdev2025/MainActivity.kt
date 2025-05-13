@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import ph.edu.cksc.college.appdev.appdev2025.data.DiaryEntry
 import ph.edu.cksc.college.appdev.appdev2025.screens.AboutScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.AuthScreen
+import ph.edu.cksc.college.appdev.appdev2025.screens.CalculatorScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.DiaryEntryScreen
 import ph.edu.cksc.college.appdev.appdev2025.screens.DiaryEntryView
 import ph.edu.cksc.college.appdev.appdev2025.screens.FavoriteFoodScreen
@@ -150,6 +151,7 @@ class MainActivity : ComponentActivity() {
             composable(REGISTER_SCREEN) { RegisterScreen(navController) }
             composable(BLOCK_BLAST_SCREEN) { BlockBlastScreen(navController) }
             composable(EXPENSE_TRACKER_SCREEN) { ExpenseTrackerScreen(navController, auth, firestore) }
+            composable(CALCULATOR_SCREEN) { CalculatorScreen() }
             composable(SETTINGS_SCREEN) { 
                 SettingsScreen(
                     navController = navController,
